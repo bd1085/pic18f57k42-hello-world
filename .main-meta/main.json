@@ -1,0 +1,52 @@
+{
+  "metaDataVersion": "1.0.0",
+  "category": "com.microchip.ide.project",
+  "content": {
+    "metaDataVersion": "1.0.0",
+    "name": "com.microchip.mcu8.mplabx.project.pic18f57k42-hello-world",
+    "version": "0.0.1",
+    "displayName": "PIC18F57K42 Hello World",
+    "projectName": "pic18f57k42-hello-world",
+    "shortDescription": "PIC18F57K42 MCC Example",
+	"ide": {
+		"name": "MPLABX",
+		"semverRange": ">=5.35.0"
+	},
+	"compiler": {
+		"name": "XC8",
+		"semverRange": "^2.20.0"
+	},
+	"dfp": {
+		"name": "PIC18F-K_DFP",
+		"semverRange": "^1.3.84"
+	},
+	"configurator": {
+		"name": "MCC",
+		"semverRange": ">=3.9.50"
+	},
+	"device": {
+		"metaDataVersion": "1.0.0",
+		"category": "com.microchip.portal.contentRef",
+		"content": {
+			"metaDataVersion": "1.0.0",
+			"category": "com.microchip.device",
+			"name": "PIC18F57K42",
+			"versionRange": "*"
+		}
+	},
+	"subcategories":[
+		"MCC",
+		[
+			"Peripherals",
+			"GPIO"
+		]
+	],
+	"peripherals": [
+		"GPIO"
+	],
+	"keywords": [
+		"MCC",
+		"GPIO"
+	]
+  }
+}
