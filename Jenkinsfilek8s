@@ -85,7 +85,7 @@ pipeline {
 						execute("git clone https://bitbucket.microchip.com/scm/portal/bundles.git")
 						execute("cd bundles && chmod 755 ./portal-client-cli-linux")
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-portal-client-launcher.git")
-						execute("cd tool-portal-launcher && node portalLauncher.js -app=../bundles/portal-client-cli-linux -cmd=\"uploadGitHub ${cmdArgs}\"")
+						execute("cd tool-portal-client-launcher && node portalLauncher.js -app=../bundles/portal-client-cli-linux -cmd=\"uploadGitHub ${cmdArgs}\"")
 					} else {
 						echo "Tag name is not equal to metadata content version."
 						execute("exit 1")
