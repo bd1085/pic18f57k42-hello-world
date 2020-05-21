@@ -17,7 +17,7 @@ pipeline {
 		GITHUB_OWNER = 'bd1085'
 		GITHUB_URL ='https://github.com/bd1085/pic18f57k42-hello-world.git'
 		BITBUCKET_URL = 'https://bitbucket.microchip.com/scm/~i15784/pic18f57k42-hello-world.git'
-		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/~i15784/tool-github-deploy.git'
+		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'
 		DEPLOY_SCRIPT_DIR = 'tool-github-deploy'
 		DEPLOY_SCRIPT_FILE = 'deploy-source-as-is.sh'
 	}
@@ -55,7 +55,6 @@ pipeline {
 			steps {
 				script {
 					execute("git clone ${env.DEPLOY_TOOL_URL}")		
-					execute("cd ${env.DEPLOY_SCRIPT_DIR} && git checkout feature/annotatedTag")
 					
 					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_SCRIPT_FILE} ${env.BITBUCKET_URL} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} '--tag ${env.TAG_NAME}'")	
@@ -85,7 +84,7 @@ pipeline {
 					
 						execute("git clone https://bitbucket.microchip.com/scm/portal/bundles.git")
 						execute("cd bundles && chmod 755 ./portal-client-cli-linux")
-						execute("git clone https://bitbucket.microchip.com/scm/~i15784/tool-portal-launcher.git")
+						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-portal-client-launcher.git")
 						execute("cd tool-portal-launcher && node portalLauncher.js -app=../bundles/portal-client-cli-linux -cmd=\"uploadGitHub ${cmdArgs}\"")
 					} else {
 						echo "Tag name is not equal to metadata content version."
