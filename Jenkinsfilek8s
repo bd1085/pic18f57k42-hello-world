@@ -81,8 +81,7 @@ pipeline {
 					if(version == env.TAG_NAME) {
 				
 						def cmdArgs = "'{\"repoOwnerName\":\"$env.GITHUB_OWNER\",\"repoName\":\"$project\",\"tagName\":\"$version\"}'"
-						cmdArgs = cmdArgs.replaceAll("\"","\\\\\"")
-						echo "$cmdArgs"
+						cmdArgs = cmdArgs.replaceAll("\"","\\\\\"")						
 					
 						execute("git clone https://bitbucket.microchip.com/scm/portal/bundles.git")
 						execute("cd bundles && chmod 755 ./portal-client-cli-linux")
