@@ -40,9 +40,6 @@ pipeline {
 				script {						
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")								
 						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")	
-						def hexFiles = findFiles(glob: '**/*.hex')
-					    def artifacts = hexFiles.join(" ")
-					    echo "${artifacts}"
 				}
             }
         }
@@ -62,17 +59,21 @@ pipeline {
 					def hexFiles = findFiles(glob: '**/*.hex')
 					def artifacts = hexFiles.join(" ")
 					echo "${artifacts}"
+					
+					def githubObj = getGiHubInfo()
 				
 					execute("git clone ${env.DEPLOY_TOOL_URL}")		
 					execute ("cd ${env.DEPLOY_SCRIPT_DIR} && git checkout bugFix/release-api-issue")
+					
 					//Branch and tag deployment
 					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_SCRIPT_FILE} ${env.BITBUCKET_URL} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} '--tag ${env.TAG_NAME}'")	
 					}
-					//artifacts deployment
+					
+					//artifacts deployment	
 					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_ARTIFACT_FILE} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} ${env.TAG_NAME} ${env.TAG_NAME} ${env.TAG_NAME} '../${artifacts}'")	
-					}					
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -rlo=true -gpat=${USER_PASS}  -rpn=${githubObj.repoName} -rltv=${env.TAG_NAME} -rltt=${env.TAG_NAME} -rlua=${artifacts} -dmfd=true")
+					}
                     sendSuccessfulGithubDeploymentEmail()					
 				}
 			}
@@ -128,6 +129,19 @@ def execute(String cmd) {
 	} else {
 		bat cmd
 	}
+}
+
+def getGiHubInfo()
+{
+	def githubObj = [
+		'ownerName':'',
+		'repoName':''
+		]
+	String[] splitURLString = "${env.GITHUB_URL}".split("/")
+	githubObj.repoName = splitURLString[splitURLString.size()-1]
+	githubObj.repoName = githubObj.repoName.replace(".git","")
+	githubObj.ownerName = splitURLString[splitURLString.size()-2]
+	return githubObj
 }
 
 def sendPipelineFailureEmail () {
