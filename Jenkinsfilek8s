@@ -20,7 +20,6 @@ pipeline {
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/~i15784/tool-github-deploy.git'
 		DEPLOY_SCRIPT_DIR = 'tool-github-deploy'
 		DEPLOY_SCRIPT_FILE = 'deploy-source-as-is.sh'
-		DEPLOY_ARTIFACT_FILE = 'deploy-artifacts.sh'
 	}
 
     options {
@@ -58,7 +57,6 @@ pipeline {
 				
 					def hexFiles = findFiles(glob: '**/*.hex')
 					def artifacts = hexFiles.join(" ")
-					echo "${artifacts}"
 					
 					def githubObj = getGiHubInfo()
 				
