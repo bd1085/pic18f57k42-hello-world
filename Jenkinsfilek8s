@@ -57,7 +57,7 @@ pipeline {
 				
 					def hexFiles = findFiles(glob: '**/*.hex')
 					hexFiles = hexFiles.join(",")
-					zip zipFile: 'hex.zip', archive: false, glob: "{hexFiles}"
+					zip zipFile: 'hex.zip', archive: false, glob: "${hexFiles}"
 					
 					def githubObj = getGiHubInfo()
 				
