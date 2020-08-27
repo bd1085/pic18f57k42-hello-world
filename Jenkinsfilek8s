@@ -56,7 +56,7 @@ pipeline {
 				script {
 				
 					def hexFiles = findFiles(glob: '**/*.hex')
-					def artifacts = hexFiles.join(" ")
+					def artifacts = hexFiles.join(", ")
 					
 					def githubObj = getGiHubInfo()
 				
