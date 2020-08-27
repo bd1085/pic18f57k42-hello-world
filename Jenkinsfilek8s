@@ -20,6 +20,7 @@ pipeline {
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/~i15784/tool-github-deploy.git'
 		DEPLOY_SCRIPT_DIR = 'tool-github-deploy'
 		DEPLOY_SCRIPT_FILE = 'deploy-source-as-is.sh'
+		DEPLOY_ARTIFACT_FILE = 'deploy-artifacts.sh'
 	}
 
     options {
@@ -38,7 +39,10 @@ pipeline {
             steps {
 				script {						
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")								
-						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")		 
+						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")	
+						
+						def hexFiles = findFiles glob: **/*.hex
+						echo "${hexFiles}"
 				}
             }
         }
@@ -54,11 +58,17 @@ pipeline {
             }
 			steps {
 				script {
+				
 					execute("git clone ${env.DEPLOY_TOOL_URL}")		
 					execute ("cd ${env.DEPLOY_SCRIPT_DIR} && git checkout bugFix/release-api-issue")
+					//Branch and tag deployment
 					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_SCRIPT_FILE} ${env.BITBUCKET_URL} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} '--tag ${env.TAG_NAME}'")	
-					}	
+					}
+					//artifacts deployment
+					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
+						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_ARTIFACT_FILE} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} ${env.TAG_NAME} ${env.TAG_NAME} ${env.TAG_NAME} '../${artifacts}'")	
+					}					
                     sendSuccessfulGithubDeploymentEmail()					
 				}
 			}
