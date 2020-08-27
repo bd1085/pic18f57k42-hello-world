@@ -20,6 +20,7 @@ pipeline {
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'
 		DEPLOY_SCRIPT_DIR = 'tool-github-deploy'
 		DEPLOY_SCRIPT_FILE = 'deploy-source-as-is.sh'
+		PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY = 'pro'
 	}
 
     options {
@@ -38,7 +39,10 @@ pipeline {
             steps {
 				script {						
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")								
-						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")	
+						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")
+						
+						def hexFiles = findFiles(glob: '**/${PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY}/**/*.hex')
+						echo "${hexFiles}"
 				}
             }
         }
@@ -141,6 +145,7 @@ def getGiHubInfo()
 	githubObj.ownerName = splitURLString[splitURLString.size()-2]
 	return githubObj
 }
+
 
 def sendPipelineFailureEmail () {
     if (!"${env.CHANGE_AUTHOR_EMAIL}".equalsIgnoreCase("null")) {		  
