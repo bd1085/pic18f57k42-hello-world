@@ -40,9 +40,9 @@ pipeline {
 				script {						
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")								
 						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")	
-						
 						def hexFiles = findFiles(glob: '**/*.hex')
-						echo "${hexFiles}"
+					    def artifacts = hexFiles.join(" ")
+					    echo "${artifacts}"
 				}
             }
         }
@@ -58,6 +58,10 @@ pipeline {
             }
 			steps {
 				script {
+				
+					def hexFiles = findFiles(glob: '**/*.hex')
+					def artifacts = hexFiles.join(" ")
+					echo "${artifacts}"
 				
 					execute("git clone ${env.DEPLOY_TOOL_URL}")		
 					execute ("cd ${env.DEPLOY_SCRIPT_DIR} && git checkout bugFix/release-api-issue")
