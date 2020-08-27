@@ -57,7 +57,7 @@ pipeline {
 				
 					def hexFiles = findFiles(glob: '**/*.hex')
 					hexFiles = hexFiles.join(",")
-					zip zipFile: 'hex.zip', archive: false, glob: "${hexFiles}"
+					zip zipFile: "hex-${env.TAG_NAME}.zip", archive: false, glob: "${hexFiles}"
 					
 					def githubObj = getGiHubInfo()
 				
@@ -70,7 +70,7 @@ pipeline {
 					
 					//artifacts deployment	
 					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -rlo=true -gpat=${USER_PASS}  -rpn=${githubObj.repoName} -rltv=${env.TAG_NAME} -rltt=${env.TAG_NAME} -rlua=hex.zip -rle=true -dmfd=true")
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -rlo=true -gpat=${USER_PASS}  -rpn=${githubObj.repoName} -rltv=${env.TAG_NAME} -rltt=${env.TAG_NAME} -rlua=hex-${env.TAG_NAME}.zip -rle=true -dmfd=true")
 					}
                     sendSuccessfulGithubDeploymentEmail()					
 				}
