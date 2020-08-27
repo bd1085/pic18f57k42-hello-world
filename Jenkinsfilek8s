@@ -41,7 +41,7 @@ pipeline {
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")								
 						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")
 						
-						def hexFiles = findFiles(glob: '**/${PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY}/**/*.hex')
+						def hexFiles = findFiles(glob: "**/${PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY}/**/*.hex")
 						echo "${hexFiles}"
 				}
             }
