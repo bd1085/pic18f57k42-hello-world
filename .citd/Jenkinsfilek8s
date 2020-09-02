@@ -20,7 +20,7 @@ pipeline {
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
 		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
-		GITHUB_URL = getGitHubRepositoryUrl("${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
+		GITHUB_URL = getGitHubRepositoryUrl("{BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
 		GITHUB_CREDENTIAL_ID = getGitHubCredentialId()
 		DEPLOY_BRANCH = "${BRANCH_NAME}"
 		DEPLOY_EXCLUDE_FILE_LIST = ''
@@ -200,11 +200,11 @@ def getRepositoryInformation (String url) {
 	return repoObj
 }
 
-def getGitHubRepositoryUrl(String productionUrl, String testDeployUrl) {	
+def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl) {	
     String branchName = "${env.BRANCH_NAME}"	
-	echo "source: ${env.BITBUCKET_SOURCE_URL}"
+	echo "source: ${bbSourceUrl}"
 	echo "branch: ${env.BRANCH_NAME}"
-	def repoObj = getRepositoryInformation("${env.BITBUCKET_SOURCE_URL}")
+	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
     if(branchName == 'master') {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
