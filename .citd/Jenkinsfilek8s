@@ -48,9 +48,9 @@ pipeline {
 					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
 					
 					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"		
-					def githubObj = getRepositoryInformation(env.GITHUB_URL)
+					def repoObj = getRepositoryInformation(env.BITBUCKET_SOURCE_URL)
 					
-					if(githubObj.repoName != jsonObj.content.projectName) {
+					if(repoObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}					
 					if(env.TAG_NAME != null) {
@@ -104,7 +104,6 @@ pipeline {
 			steps {
 				script {
 					//Branch deployment
-					echo "github-token:${env.GITHUB_CREDENTIAL_ID}"
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH} -dmfd=true")	
 					}	
@@ -128,8 +127,7 @@ pipeline {
 					//Branch and tag deployment
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH} -dtag=${env.TAG_NAME} -dmfd=true")	
-					}
-					
+					}					
                     sendSuccessfulGithubDeploymentEmail()					
 				}
 			}
