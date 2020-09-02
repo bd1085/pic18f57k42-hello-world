@@ -217,7 +217,7 @@ def getGitHubCredentialId () {
 	String branchName = "${env.BRANCH_NAME}";
 	if(branchName == 'master') {		
         return "${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}" ;
-    } else if(branchName == 'test_deploy') {		
+    } else if(branchName == 'test-deploy') {		
         return "${env.GITHUB_TEST_DEPLOY_CREDENTIAL_ID}";
     } else {
         return null
