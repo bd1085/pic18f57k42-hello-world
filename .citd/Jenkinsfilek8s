@@ -14,15 +14,15 @@ pipeline {
     }
 	
 	environment {
-		BITBUCKET_SOURCE_URL = "${env.GIT_URL}"
+		BITBUCKET_SOURCE_URL = "${GIT_URL}"
 		BITBUCKET_SOURCE_CREDENTIAL_ID = ''
 		GITHUB_PRODUCTION_DEPLOY_URL ='https://github.com/bd1085'
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
 		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
-		GITHUB_URL = getGitHubRepositoryUrl("${env.GITHUB_PRODUCTION_DEPLOY_URL}","${env.GITHUB_TEST_DEPLOY_URL}")
+		GITHUB_URL = getGitHubRepositoryUrl("${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
 		GITHUB_CREDENTIAL_ID = getGitHubCredentialId()
-		DEPLOY_BRANCH = "${env.BRANCH_NAME}"
+		DEPLOY_BRANCH = "${BRANCH_NAME}"
 		DEPLOY_EXCLUDE_FILE_LIST = ''
 		METADATA_FILE_PATH = '.main-meta/main.json'
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'	
@@ -202,7 +202,10 @@ def getRepositoryInformation (String url) {
 
 def getGitHubRepositoryUrl(String productionUrl, String testDeployUrl) {	
     String branchName = "${env.BRANCH_NAME}"	
+	echo "source: ${env.BITBUCKET_SOURCE_URL}"
+	echo "branch: ${env.BRANCH_NAME}"
 	def repoObj = getRepositoryInformation("${env.BITBUCKET_SOURCE_URL}")
+	
     if(branchName == 'master') {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
