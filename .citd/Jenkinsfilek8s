@@ -48,6 +48,7 @@ pipeline {
 					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
 					
 					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"		
+					echo "github-url:-${env.GITHUB_URL}"
 					def githubObj = getRepositoryInformation(env.GITHUB_URL)
 					echo "${jsonObj}"
 					echo "${githubObj}"
@@ -202,7 +203,7 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 	
     if(branchName == 'master') {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
-       return githubProductionRepositoryUrl;
+        return githubProductionRepositoryUrl;
     } else if(branchName == 'test-deploy') {
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
