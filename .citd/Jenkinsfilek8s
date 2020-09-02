@@ -217,6 +217,7 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 
 def getGitHubCredentialId () {
 	String branchName = "${env.BRANCH_NAME}"
+	echo "branch-->${branchName}"
 	if(branchName == 'master') {	
 		echo "cred:${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}"
         return "${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}" 
