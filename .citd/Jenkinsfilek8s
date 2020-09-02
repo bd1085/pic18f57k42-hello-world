@@ -196,6 +196,7 @@ def getRepositoryInformation (String url) {
 }
 
 def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl) {	
+	echo "BB:-${bbSourceUrl}"
     String branchName = "${env.BRANCH_NAME}"	
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
