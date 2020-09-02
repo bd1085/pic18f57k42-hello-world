@@ -48,10 +48,8 @@ pipeline {
 					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
 					
 					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"		
-					echo "github-url:-${env.GITHUB_URL}"
 					def githubObj = getRepositoryInformation(env.GITHUB_URL)
-					echo "${jsonObj}"
-					echo "${githubObj}"
+					
 					if(githubObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}					
@@ -197,7 +195,6 @@ def getRepositoryInformation (String url) {
 }
 
 def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl) {	
-	echo "BB:-${bbSourceUrl}"
     String branchName = "${env.BRANCH_NAME}"	
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
