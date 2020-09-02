@@ -49,7 +49,8 @@ pipeline {
 					
 					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"		
 					def githubObj = getRepositoryInformation(env.GITHUB_URL)
-					
+					echo "${jsonObj}"
+					echo "${githubObj}"
 					if(githubObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}					
