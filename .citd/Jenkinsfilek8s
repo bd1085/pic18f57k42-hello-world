@@ -48,9 +48,8 @@ pipeline {
 					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
 					
 					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"		
-					echo "${jsonObj}"
 					def githubObj = getRepositoryInformation(env.GITHUB_URL)
-					echo "${githubObj}"
+					
 					if(githubObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}					
@@ -202,8 +201,6 @@ def getRepositoryInformation (String url) {
 
 def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl) {	
     String branchName = "${env.BRANCH_NAME}"	
-	echo "source: ${bbSourceUrl}"
-	echo "branch: ${env.BRANCH_NAME}"
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
     if(branchName == 'master') {
@@ -219,9 +216,11 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 
 def getGitHubCredentialId () {
 	String branchName = "${env.BRANCH_NAME}";
-	if(branchName == 'master') {		
-        return "${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}" ;
-    } else if(branchName == 'test-deploy') {		
+	if(branchName == 'master') {	
+		echo "cred:${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID"}
+        return "${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}" 
+    } else if(branchName == 'test-deploy') {
+		echo "cred:${env.GITHUB_TEST_DEPLOY_CREDENTIAL_ID"}
         return "${env.GITHUB_TEST_DEPLOY_CREDENTIAL_ID}";
     } else {
         return null
