@@ -20,7 +20,7 @@ pipeline {
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
 		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
-		GITHUB_URL = getGitHubRepositoryUrl("${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
+		GITHUB_URL = getGitHubRepositoryUrl("${env.GITHUB_PRODUCTION_DEPLOY_URL}","${env.GITHUB_TEST_DEPLOY_URL}")
 		GITHUB_CREDENTIAL_ID = getGitHubCredentialId()
 		DEPLOY_BRANCH = "${env.BRANCH_NAME}"
 		DEPLOY_EXCLUDE_FILE_LIST = ''
@@ -47,9 +47,10 @@ pipeline {
 					execute("git clone https://bitbucket.microchip.com/scm/citd/tool-metadata-validator.git")					
 					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
 
-					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"					
+					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"		
+					echo "${jsonObj}"
 					def githubObj = getRepositoryInformation(env.GITHUB_URL)
-					
+					echo "${githubObj}"
 					if(githubObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}
@@ -200,13 +201,13 @@ def getRepositoryInformation (String url) {
 }
 
 def getGitHubRepositoryUrl(String productionUrl, String testDeployUrl) {	
-    String branchName = "${env.BRANCH_NAME}";
-	def repoObj = getRepositoryInformation(env.BITBUCKET_SOURCE_URL);
+    String branchName = "${env.BRANCH_NAME}"	
+	def repoObj = getRepositoryInformation("${env.BITBUCKET_SOURCE_URL}")
     if(branchName == 'master') {
-		String githubProductionRepositoryUrl = "${productionUrl}"+"/"+"${repoObj.repoName}"
+		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
     } else if(branchName == 'test-deploy') {
-		String githubTestRepositoryUrl = "${testDeployUrl}"+"/"+"${repoObj.repoName}"
+		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
         return null
