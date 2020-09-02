@@ -205,17 +205,17 @@ def getGitHubRepositoryUrl(String productionUrl, String testDeployUrl) {
     String branchName = "${env.BRANCH_NAME}"	
 	echo "source: ${env.BITBUCKET_SOURCE_URL}"
 	echo "branch: ${env.BRANCH_NAME}"
-	def repoObj = getRepositoryInformation("${env.BITBUCKET_SOURCE_URL}")
+	//def repoObj = getRepositoryInformation("${env.BITBUCKET_SOURCE_URL}")
 	
-    if(branchName == 'master') {
-		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
-        return githubProductionRepositoryUrl;
-    } else if(branchName == 'test-deploy') {
-		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
-        return githubTestRepositoryUrl;
-    } else {
-        return null
-    }
+    //if(branchName == 'master') {
+	//	String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
+    //   return githubProductionRepositoryUrl;
+    //} else if(branchName == 'test-deploy') {
+	//	String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
+    //    return githubTestRepositoryUrl;
+    //} else {
+    //    return null
+    //}
 }
 
 def getGitHubCredentialId () {
