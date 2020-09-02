@@ -96,7 +96,8 @@ pipeline {
 		stage('Github-Deploy-Source') {
 			when {
 				not { changeRequest () }
-				anyOf { 					
+				anyOf { 	
+					branch 'master'
 					branch 'test-deploy' 
 				}
 			}
