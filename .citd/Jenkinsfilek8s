@@ -205,7 +205,7 @@ def getGitHubRepositoryUrl(String productionUrl, String testDeployUrl) {
     if(branchName == 'master') {
 		String githubProductionRepositoryUrl = "${productionUrl}"+"/"+"${repoObj.repoName}"
         return githubProductionRepositoryUrl;
-    } else if(branchName == 'test_deploy') {
+    } else if(branchName == 'test-deploy') {
 		String githubTestRepositoryUrl = "${testDeployUrl}"+"/"+"${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
