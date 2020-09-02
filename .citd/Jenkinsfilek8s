@@ -14,7 +14,7 @@ pipeline {
     }
 	
 	environment {
-		BITBUCKET_SOURCE_URL = "${env.GIT_URL}"
+		BITBUCKET_SOURCE_URL = "${GIT_URL}"
 		BITBUCKET_SOURCE_CREDENTIAL_ID = ''
 		GITHUB_PRODUCTION_DEPLOY_URL ='https://github.com/bd1085'
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
