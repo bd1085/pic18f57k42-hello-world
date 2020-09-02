@@ -190,7 +190,7 @@ def getRepositoryInformation (String url) {
 	def repoObj = [
 		'ownerName':'',
 		'repoName':'',
-		'projectName:''
+		'projectName':''
 	]
 	String[] splitURLString = "${url}".split("/")
 	repoObj.repoName = splitURLString[splitURLString.size()-1]
