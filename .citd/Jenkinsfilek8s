@@ -14,7 +14,7 @@ pipeline {
     }
 	
 	environment {
-		BITBUCKET_SOURCE_URL = 'https://bitbucket.microchip.com/scm/~i15784/pic18f57k42-hello-world.git'
+		BITBUCKET_SOURCE_URL = "${env.GIT_URL}"
 		BITBUCKET_SOURCE_CREDENTIAL_ID = ''
 		GITHUB_PRODUCTION_DEPLOY_URL ='https://github.com/bd1085'
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
@@ -43,7 +43,6 @@ pipeline {
 		stage('metadata') {
             steps {
 				script {
-					execute("printenv")
 					execute("git clone https://bitbucket.microchip.com/scm/citd/metadata-schema.git")						
 					execute("git clone https://bitbucket.microchip.com/scm/citd/tool-metadata-validator.git")					
 					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
@@ -54,8 +53,7 @@ pipeline {
 					echo "${githubObj}"
 					if(githubObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
-					}
-					
+					}					
 					if(env.TAG_NAME != null) {
 						if(env.TAG_NAME != jsonObj.content.version) {
 							execute("echo 'Version in metadata file does not match with TAG_NAME.' && exit 1") 
