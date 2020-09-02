@@ -21,7 +21,7 @@ pipeline {
 		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
 		GITHUB_URL = getGitHubRepositoryUrl("${BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
-		GITHUB_CREDENTIAL_ID = getGitHubCredentialId()
+		GITHUB_CREDENTIAL_ID = getGitHubCredentialId("${GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}","${GITHUB_TEST_DEPLOY_CREDENTIAL_ID}")
 		DEPLOY_BRANCH = "${BRANCH_NAME}"
 		DEPLOY_EXCLUDE_FILE_LIST = ''
 		METADATA_FILE_PATH = '.main-meta/main.json'
@@ -215,15 +215,15 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
     }
 }
 
-def getGitHubCredentialId () {
+def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential) {
 	String branchName = "${env.BRANCH_NAME}"
 	echo "branch-->${branchName}"
 	if(branchName == 'master') {	
-		echo "cred:${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}"
-        return "${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}" 
+		echo "cred:${githubProductionDeployCredential}"
+        return "${githubProductionDeployCredential}" 
     } else if(branchName == 'test-deploy') {
-		echo "cred:${env.GITHUB_TEST_DEPLOY_CREDENTIAL_ID}"
-        return "${env.GITHUB_TEST_DEPLOY_CREDENTIAL_ID}";
+		echo "cred:${githubTestDeployCredential}"
+        return "${githubTestDeployCredential}";
     } else {
         return null
     }
