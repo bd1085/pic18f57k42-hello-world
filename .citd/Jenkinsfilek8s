@@ -143,23 +143,16 @@ pipeline {
 			}
 			steps {
 				script {
-					def metadata = readJSON file:".main-meta/main.json"
-					
-					def version = metadata.content.version
-					def project = metadata.content.projectName
-
-					if(version == env.TAG_NAME) {
+					def githubObj = getRepositoryInformation(env.GITHUB_URL)	
 				
-						def cmdArgs = "'{\"repoOwnerName\":\"$env.GITHUB_OWNER\",\"repoName\":\"$project\",\"tagName\":\"$version\"}'"
-						cmdArgs = cmdArgs.replaceAll("\"","\\\\\"")						
-					
-						execute("git clone https://bitbucket.microchip.com/scm/portal/bundles.git")
-						execute("cd bundles && chmod 755 ./portal-client-cli-linux")
-						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-portal-client-launcher.git")
-						execute("cd tool-portal-client-launcher && node portalLauncher.js -app=../bundles/portal-client-cli-linux -cmd=\"uploadGitHub ${cmdArgs}\"")
-					} else {
-						execute("echo 'Tag name is not equal to metadata content version.' && exit 1")
-					}
+					def cmdArgs = "'{\"repoOwnerName\":\"$githubObj.ownerName\",\"repoName\":\"$githubObj.repoName\",\"tagName\":\"$env.TAG_NAME\"}'"
+					cmdArgs = cmdArgs.replaceAll("\"","\\\\\"")						
+				
+					execute("git clone https://bitbucket.microchip.com/scm/portal/bundles.git")
+					execute("cd bundles && chmod 755 ./portal-client-cli-linux")
+					execute("git clone https://bitbucket.microchip.com/scm/citd/tool-portal-client-launcher.git")
+					execute("cd tool-portal-client-launcher && node portalLauncher.js -app=../bundles/portal-client-cli-linux -cmd=\"uploadGitHub ${cmdArgs}\"")
+
 				}
 			}
 		}
@@ -217,12 +210,9 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 
 def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential) {
 	String branchName = "${env.BRANCH_NAME}"
-	echo "branch-->${branchName}"
 	if(branchName == 'master') {	
-		echo "cred:${githubProductionDeployCredential}"
         return "${githubProductionDeployCredential}" 
     } else if(branchName == 'test-deploy') {
-		echo "cred:${githubTestDeployCredential}"
         return "${githubTestDeployCredential}";
     } else {
         return null
