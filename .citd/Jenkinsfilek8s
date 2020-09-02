@@ -13,14 +13,19 @@ pipeline {
                 description: "Email to send build failure and fixed notifications.")
     }
 	
-	environment {	
-		GITHUB_OWNER = 'bd1085'
-		GITHUB_URL ='https://github.com/bd1085/pic18f57k42-hello-world.git'
-		BITBUCKET_URL = 'https://bitbucket.microchip.com/scm/~i15784/pic18f57k42-hello-world.git'
-		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'
-		DEPLOY_SCRIPT_DIR = 'tool-github-deploy'
-		DEPLOY_SCRIPT_FILE = 'deploy-source-as-is.sh'
-		PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY = 'pro'
+	environment {
+		BITBUCKET_SOURCE_URL = "${env.GIT_URL}"
+		BITBUCKET_SOURCE_CREDENTIAL_ID = ''
+		GITHUB_PRODUCTION_DEPLOY_URL ='https://github.com/bd1085'
+		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
+		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
+		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
+		GITHUB_URL = getGitHubRepositoryUrl("${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
+		GITHUB_CREDENTIAL_ID = getGitHubCredentialId()
+		DEPLOY_BRANCH = "${env.BRANCH_NAME}"
+		DEPLOY_EXCLUDE_FILE_LIST = ''
+		METADATA_FILE_PATH = '.main-meta/main.json'
+		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'	
 	}
 
     options {
@@ -35,16 +40,78 @@ pipeline {
             }
         }
 		
-		stage('Build') {
+		stage('metadata') {
             steps {
-				script {						
-						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")								
-						execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")
+				script {
+					execute("git clone https://bitbucket.microchip.com/scm/citd/metadata-schema.git")						
+					execute("git clone https://bitbucket.microchip.com/scm/citd/tool-metadata-validator.git")					
+					execute("cd tool-metadata-validator && python metadata-validator.py -data '../${env.METADATA_FILE_PATH}' -schema '../metadata-schema/main-schema.json'")
+
+					def jsonObj = readJSON file:"${env.METADATA_FILE_PATH}"					
+					def githubObj = getRepositoryInformation(env.GITHUB_URL)
+					
+					if(githubObj.repoName != jsonObj.content.projectName) {
+						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
+					}
+					
+					if(env.TAG_NAME != null) {
+						if(env.TAG_NAME != jsonObj.content.version) {
+							execute("echo 'Version in metadata file does not match with TAG_NAME.' && exit 1") 
+						}
+					}					
 				}
             }
         }
 		
-        stage('GitHub-Deploy') {
+		stage('Pre-build') {
+			steps {
+				script {					
+					MPLABX_PATH= sh (script: 'update-alternatives --list MPLABX_PATH',returnStdout: true).trim()
+					COMPILER_PATH= sh (script: 'update-alternatives --list XC8_PATH',returnStdout: true).trim()										
+					def pDir = "${MPLABX_PATH}/packs"					
+					def ver = COMPILER_PATH.split('/')[4].substring(1)		
+					
+					execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-project-generator.git")					
+					execute("cd tool-mplabx-c-project-generator && node configGenerator.js sp=../ v8=${ver} packs=${pDir}")	
+				}
+			}
+		}
+
+		stage('Build') {
+            steps {
+				script {
+					execute("git clone https://bitbucket.microchip.com/scm/citd/tool-mplabx-c-build.git")						
+					execute("cd tool-mplabx-c-build && node buildLauncher.js sp=../ rp=./output genMK=true")		 
+				}
+            }
+        }	
+		
+		stage('Tool-Setup') {
+			steps {
+				script {
+					downloadDeployTool()	
+				}
+			}			
+		}
+		
+		stage('Github-Deploy-Source') {
+			when {
+				not { changeRequest () }
+				anyOf { 					
+					branch 'test-deploy' 
+				}
+			}
+			steps {
+				script {
+					//Branch deployment
+					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH} -dmfd=true")	
+					}	
+				}
+			}
+		}
+		
+        stage('GitHub-Deploy-Release') {
 			when {
 				not { 
 					changeRequest() 
@@ -54,24 +121,14 @@ pipeline {
 				}
             }
 			steps {
-				script {
-				
-					def hexFiles = findFiles(glob: "**/${PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY}/**/*.hex")
-					hexFiles = hexFiles.join(", ")					
-					
-					def githubObj = getGiHubInfo()
-				
-					execute("git clone ${env.DEPLOY_TOOL_URL}")		
-					
+				script {			
+					def githubObj = getRepositoryInformation(env.GITHUB_URL)			
+						
 					//Branch and tag deployment
-					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_SCRIPT_FILE} ${env.BITBUCKET_URL} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} '--tag ${env.TAG_NAME}'")	
+					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH} -dtag=${env.TAG_NAME} -dmfd=true")	
 					}
 					
-					//artifacts deployment	
-					withCredentials([usernamePassword(credentialsId: 'GitHubToken', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -rlo=true -gpat=${USER_PASS}  -rpn=${githubObj.repoName} -rltv=${env.TAG_NAME} -rltt=${env.TAG_NAME} -rlua='${hexFiles}' -rle=true -dmfd=true")
-					}
                     sendSuccessfulGithubDeploymentEmail()					
 				}
 			}
@@ -101,13 +158,13 @@ pipeline {
 						execute("git clone https://bitbucket.microchip.com/scm/citd/tool-portal-client-launcher.git")
 						execute("cd tool-portal-client-launcher && node portalLauncher.js -app=../bundles/portal-client-cli-linux -cmd=\"uploadGitHub ${cmdArgs}\"")
 					} else {
-						echo "Tag name is not equal to metadata content version."
-						execute("exit 1")
+						execute("echo 'Tag name is not equal to metadata content version.' && exit 1")
 					}
 				}
 			}
 		}
 	}
+	
 
     post {
         failure {			
@@ -129,17 +186,47 @@ def execute(String cmd) {
 	}
 }
 
-def getGiHubInfo()
-{
-	def githubObj = [
+def getRepositoryInformation (String url) {
+	def repoObj = [
 		'ownerName':'',
-		'repoName':''
-		]
-	String[] splitURLString = "${env.GITHUB_URL}".split("/")
-	githubObj.repoName = splitURLString[splitURLString.size()-1]
-	githubObj.repoName = githubObj.repoName.replace(".git","")
-	githubObj.ownerName = splitURLString[splitURLString.size()-2]
-	return githubObj
+		'repoName':'',
+		'projectName:''
+	]
+	String[] splitURLString = "${url}".split("/")
+	repoObj.repoName = splitURLString[splitURLString.size()-1]
+	repoObj.repoName = repoObj.repoName.replace(".git","")
+	repoObj.ownerName = splitURLString[splitURLString.size()-2]
+	repoObj.projectName = repoObj.ownerName
+}
+
+def getGitHubRepositoryUrl(String productionUrl, String testDeployUrl) {	
+    String branchName = "${env.BRANCH_NAME}";
+	def repoObj = getRepositoryInformation(env.BITBUCKET_SOURCE_URL);
+    if(branchName == 'master') {
+		String githubProductionRepositoryUrl = "${productionUrl}"+"/"+"${repoObj.repoName}"
+        return githubProductionRepositoryUrl;
+    } else if(branchName == 'test_deploy') {
+		String githubTestRepositoryUrl = "${testDeployUrl}"+"/"+"${repoObj.repoName}"
+        return githubTestRepositoryUrl;
+    } else {
+        return null
+    }
+}
+
+def getGitHubCredentialId () {
+	String branchName = "${env.BRANCH_NAME}";
+	if(branchName == 'master') {		
+        return "${env.GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}" ;
+    } else if(branchName == 'test_deploy') {		
+        return "${env.GITHUB_TEST_DEPLOY_CREDENTIAL_ID}";
+    } else {
+        return null
+    }
+}
+
+def downloadDeployTool() {
+	execute("git clone ${env.DEPLOY_TOOL_URL}")	
+	execute("chmod +x tool-github-deploy/tool-github-deploy/tool-github-deploy.py")  
 }
 
 def sendPipelineFailureEmail () {
