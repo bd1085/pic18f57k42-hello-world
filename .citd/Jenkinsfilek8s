@@ -20,8 +20,8 @@ pipeline {
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
 		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
-		GITHUB_URL = getGitHubRepositoryUrl("${BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
-		GITHUB_CREDENTIAL_ID = getGitHubCredentialId("${GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}","${GITHUB_TEST_DEPLOY_CREDENTIAL_ID}")
+		GITHUB_URL = getGitHubRepositoryUrl("${BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}","${DEPLOY_PRODUCTION_BRANCH_LIST"},"${DEPLOY_TEST_BRANCH_LIST}")
+		GITHUB_CREDENTIAL_ID = getGitHubCredentialId("${GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}","${GITHUB_TEST_DEPLOY_CREDENTIAL_ID}","${DEPLOY_PRODUCTION_BRANCH_LIST"},"${DEPLOY_TEST_BRANCH_LIST}")
 		DEPLOY_PRODUCTION_BRANCH_LIST = 'master'
 		DEPLOY_TEST_BRANCH_LIST = 'test-deploy'
 		DEPLOY_EXCLUDE_FILE_LIST = ''
@@ -208,16 +208,14 @@ def getRepositoryInformation (String url) {
 	return repoObj
 }
 
-def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl) {	
+def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl,String productionBranches, String testBranches) {	
     String branchName = "${env.BRANCH_NAME}"	
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
-    if(branchName ==~ "${env.DEPLOY_PRODUCTION_BRANCH_LIST}" ) {
-		echo "public:${env.BRANCH_NAME}"
+    if(branchName ==~ "${productionBranches}" ) {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
-    } else if(branchName ==~ "${env.DEPLOY_TEST_BRANCH_LIST}") {
-		echo "test:${env.BRANCH_NAME}"
+    } else if(branchName ==~ "${testBranches}") {		
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
@@ -225,13 +223,11 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
     }
 }
 
-def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential) {
+def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches) {
 	String branchName = "${env.BRANCH_NAME}"
-	if(branchName ==~ "${env.DEPLOY_PRODUCTION_BRANCH_LIST}" ) {	
-		echo "public-cred:${env.BRANCH_NAME}"
+	if(branchName ==~ "${productionBranches}" ) {		
         return "${githubProductionDeployCredential}" 
-    } else if(branchName ==~ "${env.DEPLOY_TEST_BRANCH_LIST}") {
-		echo "test-cred:${env.BRANCH_NAME}"
+    } else if(branchName ==~ "${testBranches}") {	
         return "${githubTestDeployCredential}";
     } else {
         return null
