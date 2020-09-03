@@ -115,10 +115,6 @@ pipeline {
 			steps {
 				script {
 					//Branch deployment
-					echo "cred:${env.GITHUB_CREDENTIAL_ID}"
-					echo "bb:${env.BITBUCKET_SOURCE_URL}"
-					echo "ghub:${env.GITHUB_URL}"
-					echo "branch:${env.BRANCH_NAME}"
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.BRANCH_NAME}  -dmfd=true")	
 					}	
@@ -211,18 +207,14 @@ def getRepositoryInformation (String url) {
 def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl,String productionBranches, String testBranches) {	
     String branchName = "${env.BRANCH_NAME}"	
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
-	echo "${testBranches}"
-	echo "${productionBranches}"
+		
     if(branchName =~ "${productionBranches}" ) {
-		echo "in production"
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
-    } else if(branchName =~ "${testBranches}") {	
-		echo "in test"	
+    } else if(branchName =~ "${testBranches}") {		
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
-		echo "in null"
         return null
     }
 }
@@ -230,16 +222,11 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches) {
 	String branchName = "${env.BRANCH_NAME}"
 	
-	echo "${testBranches}"
-	echo "${productionBranches}"
 	if(branchName =~ "${productionBranches}" ) {
-		echo "in production"
         return "${githubProductionDeployCredential}" 
     } else if(branchName =~ "${testBranches}") {	
-		echo "in test"
         return "${githubTestDeployCredential}";
     } else {
-		echo "in null"
         return null
     }
 }
