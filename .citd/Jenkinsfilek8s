@@ -22,7 +22,8 @@ pipeline {
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
 		GITHUB_URL = getGitHubRepositoryUrl("${BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}")
 		GITHUB_CREDENTIAL_ID = getGitHubCredentialId("${GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}","${GITHUB_TEST_DEPLOY_CREDENTIAL_ID}")
-		DEPLOY_BRANCH = "${BRANCH_NAME}"
+		DEPLOY_BRANCH = 'master,develop'
+		TEST_BRANCH = 'test-deploy'
 		DEPLOY_EXCLUDE_FILE_LIST = ''
 		METADATA_FILE_PATH = '.main-meta/main.json'
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'	
@@ -87,6 +88,13 @@ pipeline {
         }	
 		
 		stage('Tool-Setup') {
+			when {
+				not { changeRequest () }
+				anyOf { 	
+					branch 'master'
+					branch 'test-deploy' 					 
+				}
+			}
 			steps {
 				script {
 					downloadDeployTool()	
@@ -99,14 +107,14 @@ pipeline {
 				not { changeRequest () }
 				anyOf { 	
 					branch 'master'
-					branch 'test-deploy' 
+					branch 'test-deploy' 					 
 				}
 			}
 			steps {
 				script {
 					//Branch deployment
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH} -dtag=public -dmfd=true")	
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH}  -dmfd=true")	
 					}	
 				}
 			}
