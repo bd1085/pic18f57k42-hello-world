@@ -114,7 +114,7 @@ pipeline {
 				script {
 					//Branch deployment
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH}  -dmfd=true")	
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.BRANCH_NAME}  -dmfd=true")	
 					}	
 				}
 			}
@@ -136,7 +136,7 @@ pipeline {
 						
 					//Branch and tag deployment
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
-						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.DEPLOY_BRANCH} -dtag=${env.TAG_NAME} -dmfd=true")	
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dtag=${env.TAG_NAME} -dmfd=true")	
 					}					
                     sendSuccessfulGithubDeploymentEmail()					
 				}
