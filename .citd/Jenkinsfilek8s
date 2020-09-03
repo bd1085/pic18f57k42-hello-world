@@ -212,10 +212,10 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
     String branchName = "${env.BRANCH_NAME}"	
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
-    if(branchName ==~ "/${productionBranches}/" ) {
+    if(branchName ==~ /"${productionBranches}"/ ) {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
-    } else if(branchName ==~ "/${testBranches}/") {		
+    } else if(branchName ==~ /"${testBranches}"/) {		
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
@@ -225,9 +225,9 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 
 def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches) {
 	String branchName = "${env.BRANCH_NAME}"
-	if(branchName ==~ "/${productionBranches}/" ) {		
+	if(branchName ==~ /"${productionBranches}"/ ) {		
         return "${githubProductionDeployCredential}" 
-    } else if(branchName ==~ "/${testBranches}/") {	
+    } else if(branchName ==~ /"${testBranches}"/) {	
         return "${githubTestDeployCredential}";
     } else {
         return null
