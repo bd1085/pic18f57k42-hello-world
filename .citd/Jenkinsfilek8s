@@ -115,7 +115,7 @@ pipeline {
 			steps {
 				script {
 					//Branch deployment
-					echo "$cred:{env.GITHUB_CREDENTIAL_ID}"
+					echo "cred:${env.GITHUB_CREDENTIAL_ID}"
 					echo "bb:${env.BITBUCKET_SOURCE_URL}"
 					echo "ghub:${env.GITHUB_URL}"
 					echo "branch:${env.BRANCH_NAME}"
