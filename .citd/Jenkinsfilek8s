@@ -113,6 +113,10 @@ pipeline {
 			steps {
 				script {
 					//Branch deployment
+					echo "$cred:{env.GITHUB_CREDENTIAL_ID}"
+					echo "bb:${env.BITBUCKET_SOURCE_URL}"
+					echo "ghub:${env.GITHUB_URL}}"
+					echo "branch:${env.BRANCH_NAME}"
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.BRANCH_NAME}  -dmfd=true")	
 					}	
