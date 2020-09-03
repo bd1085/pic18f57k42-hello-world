@@ -26,6 +26,7 @@ pipeline {
 		DEPLOY_EXCLUDE_FILE_LIST = ''
 		METADATA_FILE_PATH = '.main-meta/main.json'
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'	
+		SEMVER_REGEX = '^(0|[1-9]\\d*)+\\.(0|[1-9]\\d*)+\\.(0|[1-9]\\d*)+$'
 	}
 
     options {
@@ -53,7 +54,7 @@ pipeline {
 					if(repoObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}					
-					if(env.TAG_NAME != null) {
+					if(env.TAG_NAME =~ env.SEMVER_REGEX) {
 						if(env.TAG_NAME != jsonObj.content.version) {
 							execute("echo 'Version in metadata file does not match with TAG_NAME.' && exit 1") 
 						}
