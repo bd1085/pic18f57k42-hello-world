@@ -113,6 +113,7 @@ pipeline {
 		
         stage('GitHub-Deploy-Release') {
 			when {
+				expression {false}
 				not { 
 					changeRequest() 
 				}
