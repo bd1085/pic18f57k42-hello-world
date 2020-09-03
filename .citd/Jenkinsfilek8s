@@ -104,7 +104,9 @@ pipeline {
 		
 		stage('Github-Deploy-Source') {
 			when {
-				not { changeRequest () }
+				not {
+					changeRequest () 
+				}
 				anyOf { 	
 					branch pattern: "${env.DEPLOY_PRODUCTION_BRANCH_LIST}", comparator: "REGEXP"
 					branch pattern: "${env.DEPLOY_TEST_BRANCH_LIST}", comparator: "REGEXP"					 
@@ -115,7 +117,7 @@ pipeline {
 					//Branch deployment
 					echo "$cred:{env.GITHUB_CREDENTIAL_ID}"
 					echo "bb:${env.BITBUCKET_SOURCE_URL}"
-					echo "ghub:${env.GITHUB_URL}}"
+					echo "ghub:${env.GITHUB_URL}"
 					echo "branch:${env.BRANCH_NAME}"
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dbranch=${env.BRANCH_NAME}  -dmfd=true")	
@@ -211,9 +213,11 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	
     if(branchName ==~ "${env.DEPLOY_PRODUCTION_BRANCH_LIST}" ) {
+		echo "public:${env.BRANCH_NAME}"
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
     } else if(branchName ==~ "${env.DEPLOY_TEST_BRANCH_LIST}") {
+		echo "test:${env.BRANCH_NAME}"
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
@@ -224,8 +228,10 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential) {
 	String branchName = "${env.BRANCH_NAME}"
 	if(branchName ==~ "${env.DEPLOY_PRODUCTION_BRANCH_LIST}" ) {	
+		echo "public-cred:${env.BRANCH_NAME}"
         return "${githubProductionDeployCredential}" 
     } else if(branchName ==~ "${env.DEPLOY_TEST_BRANCH_LIST}") {
+		echo "test-cred:${env.BRANCH_NAME}"
         return "${githubTestDeployCredential}";
     } else {
         return null
