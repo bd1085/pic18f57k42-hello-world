@@ -214,25 +214,32 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 	echo "${testBranches}"
 	echo "${productionBranches}"
     if(branchName ==~ /"${productionBranches}"/ ) {
+		echo "in production"
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
         return githubProductionRepositoryUrl;
-    } else if(branchName ==~ /"${testBranches}"/) {		
+    } else if(branchName ==~ /"${testBranches}"/) {	
+		echo "in test"	
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
         return githubTestRepositoryUrl;
     } else {
+		echo "in null"
         return null
     }
 }
 
 def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches) {
 	String branchName = "${env.BRANCH_NAME}"
+	
 	echo "${testBranches}"
 	echo "${productionBranches}"
-	if(branchName ==~ /"${productionBranches}"/ ) {		
+	if(branchName ==~ /"${productionBranches}"/ ) {
+		echo "in production"
         return "${githubProductionDeployCredential}" 
     } else if(branchName ==~ /"${testBranches}"/) {	
+		echo "in test"
         return "${githubTestDeployCredential}";
     } else {
+		echo "in null"
         return null
     }
 }
