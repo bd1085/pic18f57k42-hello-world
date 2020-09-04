@@ -57,7 +57,7 @@ pipeline {
 					if(repoObj.repoName != jsonObj.content.projectName) {
 						execute("echo 'Project name in metadata file does not match with GitHub repository name.' && exit 1")						
 					}					
-					if(env.TAG_NAME =~ env.SEMVER_REGEX) {
+					if(env.TAG_NAME =~ env.RELEASE_SEMVER_REGEX) {
 						if(env.TAG_NAME != jsonObj.content.version) {
 							execute("echo 'Version in metadata file does not match with TAG_NAME.' && exit 1") 
 						}
