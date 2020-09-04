@@ -4,7 +4,7 @@
   "content": {
     "metaDataVersion": "1.0.0",
     "name": "com.microchip.mcu8.mplabx.project.pic18f57k42-hello-world",
-    "version": "0.0.2",
+    "version": "0.0.17",
     "displayName": "PIC18F57K42 Hello World",
     "projectName": "pic18f57k42-hello-world",
     "shortDescription": "PIC18F57K42 MCC Example",
