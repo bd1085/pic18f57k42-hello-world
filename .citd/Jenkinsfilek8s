@@ -137,10 +137,7 @@ pipeline {
 			steps {
 				script {			
 					def githubObj = getRepositoryInformation(env.GITHUB_URL)
-					echo "${GITHUB_CREDENTIAL_ID}"
-					echo "${GITHUB_URL}"
-					echo "${TAG_NAME}"
-						
+
 					//Branch and tag deployment
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -deploy=true -gpat=${USER_PASS} -dgid=${USER_NAME} -dburl=${env.BITBUCKET_SOURCE_URL} -dgurl=${env.GITHUB_URL} -dtag=${env.TAG_NAME} -dmfd=true")	
@@ -238,16 +235,12 @@ def getGitHubCredentialId (String githubProductionDeployCredential, String githu
 }
 
 def getPattern(String publicReleasePattern, String internalReleasePattern)  {
-	String tag = "${env.TAG_NAME}"	
-	echo "tag:${env.TAG_NAME}"
-	if(tag =~ "${publicReleasePattern}") {
-		echo "in public tag"
+	String tag = "${env.TAG_NAME}"
+	if(tag =~ "${publicReleasePattern}") {		
 		return "${publicReleasePattern}"
-	} else if(tag =~ "${internalReleasePattern}") {
-		echo "in internal tag"
+	} else if(tag =~ "${internalReleasePattern}") {		
 		return "${internalReleasePattern}"
-	} else {
-		echo "tag is not matching"
+	} else {		
 		return null
 	}
 }
