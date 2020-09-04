@@ -211,8 +211,12 @@ def getRepositoryInformation (String url) {
 def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl,String productionBranches, String testBranches, String publicReleasePattern, String internalReleasePattern) {	
     
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
-	String branchName = "${env.BRANCH_NAME}"		
-	String tagName = "${env.TAG_NAME}"
+	String branchName = "${env.BRANCH_NAME}"
+	if(env.TAG_NAME != null) {
+		String tagName = "${env.TAG_NAME}"
+	else {
+		String tagName = null
+	}
 	
 	if(branchName =~ "${productionBranches}" || tagName =~ "${publicReleasePattern}") {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
