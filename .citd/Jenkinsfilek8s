@@ -239,12 +239,13 @@ def getGitHubCredentialId (String githubProductionDeployCredential, String githu
 
 def getPattern(String publicReleasePattern, String internalReleasePattern)  {
 	String tag = "${env.TAG_NAME}"	
+	echo "tag:${env.TAG_NAME}"
 	if(tag =~ "${publicReleasePattern}") {
 		echo "in public tag"
 		return "${publicReleasePattern}"
-	} else if(tag =~ "${publicReleasePattern}") {
+	} else if(tag =~ "${internalReleasePattern}") {
 		echo "in internal tag"
-		return "${publicReleasePattern}"
+		return "${internalReleasePattern}"
 	} else {
 		echo "tag is not matching"
 		return null
