@@ -212,12 +212,7 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
     
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
 	String branchName = "${env.BRANCH_NAME}"
-	if(env.TAG_NAME != null) {
-		String tagName = "${env.TAG_NAME}"
-	} else {
-		String tagName = null
-	}
-	
+	String tagName = "${env.TAG_NAME}"
 	if(branchName =~ "${productionBranches}" || tagName =~ "${publicReleasePattern}") {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
 		return githubProductionRepositoryUrl;
@@ -231,6 +226,7 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 
 def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches, String publicReleasePattern, String internalReleasePattern) {
 	String branchName = "${env.BRANCH_NAME}"	
+	String tagName = "${env.TAG_NAME}"
 	if(branchName =~ "${productionBranches}" || tagName =~ "${publicReleasePattern}") {
         return "${githubProductionDeployCredential}" 
     } else if(branchName =~ "${testBranches}"|| tagName =~ "${internalReleasePattern}") {	
@@ -241,8 +237,7 @@ def getGitHubCredentialId (String githubProductionDeployCredential, String githu
 }
 
 def getPattern(String publicReleasePattern, String internalReleasePattern)  {
-	String tag = "${env.TAG_NAME}"
-	
+	String tag = "${env.TAG_NAME}"	
 	if(tag =~ "${publicReleasePattern}") {
 		return "${publicReleasePattern}"
 	} else if(tag =~ "${publicReleasePattern}") {
