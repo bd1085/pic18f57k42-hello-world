@@ -111,7 +111,8 @@ pipeline {
 				}
 				anyOf { 	
 					branch pattern: "${env.DEPLOY_PRODUCTION_BRANCH_LIST}", comparator: "REGEXP"
-					branch pattern: "${env.DEPLOY_TEST_BRANCH_LIST}", comparator: "REGEXP"					 
+					branch pattern: "${env.DEPLOY_TEST_BRANCH_LIST}", comparator: "REGEXP"
+					tag pattern: "${env.SEMVER_REGEX}", comparator: "REGEXP"					
 				}
 			}
 			steps {
@@ -239,10 +240,13 @@ def getGitHubCredentialId (String githubProductionDeployCredential, String githu
 def getPattern(String publicReleasePattern, String internalReleasePattern)  {
 	String tag = "${env.TAG_NAME}"	
 	if(tag =~ "${publicReleasePattern}") {
+		echo "in public tag"
 		return "${publicReleasePattern}"
 	} else if(tag =~ "${publicReleasePattern}") {
+		echo "in internal tag"
 		return "${publicReleasePattern}"
 	} else {
+		echo "tag is not matching"
 		return null
 	}
 }
