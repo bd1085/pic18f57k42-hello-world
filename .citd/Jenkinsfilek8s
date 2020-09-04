@@ -214,7 +214,7 @@ def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testD
 	String branchName = "${env.BRANCH_NAME}"
 	if(env.TAG_NAME != null) {
 		String tagName = "${env.TAG_NAME}"
-	else {
+	} else {
 		String tagName = null
 	}
 	
