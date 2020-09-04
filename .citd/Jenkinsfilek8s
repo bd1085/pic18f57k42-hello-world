@@ -20,14 +20,16 @@ pipeline {
 		GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID = 'GitHubToken'
 		GITHUB_TEST_DEPLOY_URL = 'https://github.com/mchpTestArea'
 		GITHUB_TEST_DEPLOY_CREDENTIAL_ID = 'GitHubTestToken'
-		GITHUB_URL = getGitHubRepositoryUrl("${BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}","${DEPLOY_PRODUCTION_BRANCH_LIST}","${DEPLOY_TEST_BRANCH_LIST}")
-		GITHUB_CREDENTIAL_ID = getGitHubCredentialId("${GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}","${GITHUB_TEST_DEPLOY_CREDENTIAL_ID}","${DEPLOY_PRODUCTION_BRANCH_LIST}","${DEPLOY_TEST_BRANCH_LIST}")
+		GITHUB_URL = getGitHubRepositoryUrl("${BITBUCKET_SOURCE_URL}","${GITHUB_PRODUCTION_DEPLOY_URL}","${GITHUB_TEST_DEPLOY_URL}","${DEPLOY_PRODUCTION_BRANCH_LIST}","${DEPLOY_TEST_BRANCH_LIST}","${RELEASE_SEMVER_REGEX}","${RC_SEMVER_REGEX}")
+		GITHUB_CREDENTIAL_ID = getGitHubCredentialId("${GITHUB_PRODUCTION_DEPLOY_CREDENTIAL_ID}","${GITHUB_TEST_DEPLOY_CREDENTIAL_ID}","${DEPLOY_PRODUCTION_BRANCH_LIST}","${DEPLOY_TEST_BRANCH_LIST}","${RELEASE_SEMVER_REGEX}","${RC_SEMVER_REGEX}")
 		DEPLOY_PRODUCTION_BRANCH_LIST = '^(master|develop)$'
 		DEPLOY_TEST_BRANCH_LIST = '^(test-deploy)$'
 		DEPLOY_EXCLUDE_FILE_LIST = ''
 		METADATA_FILE_PATH = '.main-meta/main.json'
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'	
-		SEMVER_REGEX = '^(0|[1-9]\\d*)+\\.(0|[1-9]\\d*)+\\.(0|[1-9]\\d*)+$'
+		RELEASE_SEMVER_REGEX = '^(\\d+)\\.(\\d+)\\.(\\d+)$'
+		RC_SEMVER_REGEX = '^(\\d+)\\.(\\d+)\\.(\\d+)\\-rc(\\d+)$'
+		SEMVER_REGEX = getPattern("${RELEASE_SEMVER_REGEX}","${RC_SEMVER_REGEX}")
 	}
 
     options {
@@ -124,7 +126,6 @@ pipeline {
 		
         stage('GitHub-Deploy-Release') {
 			when {
-				expression {false}
 				not { 
 					changeRequest() 
 				}
@@ -134,7 +135,10 @@ pipeline {
             }
 			steps {
 				script {			
-					def githubObj = getRepositoryInformation(env.GITHUB_URL)			
+					def githubObj = getRepositoryInformation(env.GITHUB_URL)
+					echo "${GITHUB_CREDENTIAL_ID}"
+					echo "${GITHUB_URL}"
+					echo "${TAG_NAME}"
 						
 					//Branch and tag deployment
 					withCredentials([usernamePassword(credentialsId: "${env.GITHUB_CREDENTIAL_ID}", usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
@@ -204,31 +208,44 @@ def getRepositoryInformation (String url) {
 	return repoObj
 }
 
-def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl,String productionBranches, String testBranches) {	
-    String branchName = "${env.BRANCH_NAME}"	
+def getGitHubRepositoryUrl(String bbSourceUrl,String productionUrl, String testDeployUrl,String productionBranches, String testBranches, String publicReleasePattern, String internalReleasePattern) {	
+    
 	def repoObj = getRepositoryInformation("${bbSourceUrl}")
-		
-    if(branchName =~ "${productionBranches}" ) {
+	String branchName = "${env.BRANCH_NAME}"		
+	String tagName = "${env.TAG_NAME}"
+	
+	if(branchName =~ "${productionBranches}" || tagName =~ "${publicReleasePattern}") {
 		String githubProductionRepositoryUrl = "${productionUrl}/${repoObj.repoName}"
-        return githubProductionRepositoryUrl;
-    } else if(branchName =~ "${testBranches}") {		
+		return githubProductionRepositoryUrl;
+	} else if(branchName =~ "${testBranches}"|| tagName =~ "${internalReleasePattern}") {		
 		String githubTestRepositoryUrl = "${testDeployUrl}/${repoObj.repoName}"
-        return githubTestRepositoryUrl;
+		return githubTestRepositoryUrl;
+	} else {
+		return null
+	}
+}
+
+def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches, String publicReleasePattern, String internalReleasePattern) {
+	String branchName = "${env.BRANCH_NAME}"	
+	if(branchName =~ "${productionBranches}" || tagName =~ "${publicReleasePattern}") {
+        return "${githubProductionDeployCredential}" 
+    } else if(branchName =~ "${testBranches}"|| tagName =~ "${internalReleasePattern}") {	
+        return "${githubTestDeployCredential}";
     } else {
         return null
     }
 }
 
-def getGitHubCredentialId (String githubProductionDeployCredential, String githubTestDeployCredential,String productionBranches, String testBranches) {
-	String branchName = "${env.BRANCH_NAME}"
+def getPattern(String publicReleasePattern, String internalReleasePattern)  {
+	String tag = "${env.TAG_NAME}"
 	
-	if(branchName =~ "${productionBranches}" ) {
-        return "${githubProductionDeployCredential}" 
-    } else if(branchName =~ "${testBranches}") {	
-        return "${githubTestDeployCredential}";
-    } else {
-        return null
-    }
+	if(tag =~ "${publicReleasePattern}") {
+		return "${publicReleasePattern}"
+	} else if(tag =~ "${publicReleasePattern}") {
+		return "${publicReleasePattern}"
+	} else {
+		return null
+	}
 }
 
 def downloadDeployTool() {
