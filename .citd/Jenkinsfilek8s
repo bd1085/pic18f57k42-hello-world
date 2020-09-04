@@ -95,6 +95,7 @@ pipeline {
 				anyOf { 	
 					branch pattern: "${env.DEPLOY_PRODUCTION_BRANCH_LIST}", comparator: "REGEXP"
 					branch pattern: "${env.DEPLOY_TEST_BRANCH_LIST}", comparator: "REGEXP"
+					tag pattern: "${env.SEMVER_REGEX}", comparator: "REGEXP"	
 				}
 			}
 			steps {
@@ -111,8 +112,7 @@ pipeline {
 				}
 				anyOf { 	
 					branch pattern: "${env.DEPLOY_PRODUCTION_BRANCH_LIST}", comparator: "REGEXP"
-					branch pattern: "${env.DEPLOY_TEST_BRANCH_LIST}", comparator: "REGEXP"
-					tag pattern: "${env.SEMVER_REGEX}", comparator: "REGEXP"					
+					branch pattern: "${env.DEPLOY_TEST_BRANCH_LIST}", comparator: "REGEXP"									
 				}
 			}
 			steps {
